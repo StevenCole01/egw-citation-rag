@@ -7,6 +7,9 @@ lxml>=4.9
 chromadb>=0.5
 sentence-transformers>=3.0
 
+# Phase 5 — Generation
+openai>=1.0
+
 # Environment
 python-dotenv>=1.0
 

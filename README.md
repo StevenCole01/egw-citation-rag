@@ -30,7 +30,12 @@ python -m src.retrieval.cli --query "What does Ellen White say about prayer?"
 # or interactive mode:
 python -m src.retrieval.cli
 
-# 6. Run tests
+# 6. Generate a grounded answer (Phase 5 — requires OPENAI_API_KEY in .env)
+python -m src.generation.cli --query "What does Ellen White say about prayer?"
+# or interactive:
+python -m src.generation.cli
+
+# 7. Run tests
 python -m pytest tests/ -v
 ```
 
@@ -84,6 +89,35 @@ Produces `<book>_chunks.json` for each paragraph file:
 
 > Chunks never span chapter boundaries. `--overlap N` re-includes the last N paragraph(s) in the next chunk for contextual continuity.
 
+### Phase 5 — Generation with Citations
+
+Requires `OPENAI_API_KEY` in `.env`.
+
+```bash
+# One-shot
+python -m src.generation.cli --query "What does prayer do for the soul?" --model gpt-4o-mini
+
+# Interactive REPL
+python -m src.generation.cli
+```
+
+Output:
+
+```
+Q: What does prayer do for the soul?
+
+A: Prayer connects the soul to God, bringing peace and strength to face daily
+   trials. It is the breath of the soul and the secret of spiritual power.
+
+────────────────────────────────────────────────────────────
+Sources:
+  [1] Prayer — Preface [¶13–15]
+  [2] Steps to Christ — The Privilege of Prayer [¶47–49]
+────────────────────────────────────────────────────────────
+```
+
+The model is strictly constrained to the retrieved context — it cannot hallucinate citations or use outside knowledge.
+
 ### Phase 3 — Embeddings + Vector Store
 
 ```bash
@@ -131,5 +165,5 @@ egw-citation-rag/
 | 2     | Chunking                     | ✅     |
 | 3     | Embeddings + Vector Store    | ✅     |
 | 4     | Retrieval                    | ✅     |
-| 5     | Generation with Citations    | ⬜     |
+| 5     | Generation with Citations    | ✅     |
 | 6     | Interface (CLI / Streamlit)  | ⬜     |
