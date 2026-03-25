@@ -35,7 +35,10 @@ python -m src.generation.cli --query "What does Ellen White say about prayer?"
 # or interactive:
 python -m src.generation.cli
 
-# 7. Run tests
+# 7. Launch the Streamlit UI
+streamlit run app/streamlit_app.py
+
+# 8. Run tests
 python -m pytest tests/ -v
 ```
 
@@ -166,4 +169,4 @@ egw-citation-rag/
 | 3     | Embeddings + Vector Store    | ✅     |
 | 4     | Retrieval                    | ✅     |
 | 5     | Generation with Citations    | ✅     |
-| 6     | Interface (CLI / Streamlit)  | ⬜     |
+| 6     | Interface (CLI / Streamlit)  | ✅     |
