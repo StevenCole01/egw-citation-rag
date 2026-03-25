@@ -12,6 +12,10 @@ import os
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
+load_dotenv()  # loads HF_TOKEN and other vars from .env if present
+
 import chromadb
 from chromadb import Collection
 from chromadb.config import Settings

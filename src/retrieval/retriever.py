@@ -10,7 +10,10 @@ validating retrieval quality before generation is added.
 import json
 from dataclasses import dataclass
 
+from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
+
+load_dotenv()  # loads HF_TOKEN and other vars from .env if present
 
 from src.embeddings.store import (
     DEFAULT_COLLECTION,
