@@ -22,7 +22,10 @@ python -m src.ingestion.cli
 # 4. Chunk paragraphs → embedding-ready JSON
 python -m src.preprocessing.cli
 
-# 5. Run tests
+# 5. Embed chunks → ChromaDB vector store
+python -m src.embeddings.cli
+
+# 6. Run tests
 python -m pytest tests/ -v
 ```
 
@@ -57,12 +60,10 @@ Produces one JSON file per book in `data/processed/`:
 python -m src.preprocessing.cli \
   [--input-dir data/processed] \
   [--output-dir data/processed] \
-  [--min-words 300] \
-  [--max-words 700] \
-  [--overlap 1]
+  [--min-words 300] [--max-words 700] [--overlap 1]
 ```
 
-Produces `<book>_chunks.json` alongside each paragraph file:
+Produces `<book>_chunks.json` for each paragraph file:
 
 ```json
 [
@@ -76,7 +77,20 @@ Produces `<book>_chunks.json` alongside each paragraph file:
 ]
 ```
 
-> **Chunking rules:** chunks never span chapter boundaries; the last `--overlap` paragraph(s) of each chunk are prepended to the next for contextual continuity.
+> Chunks never span chapter boundaries. `--overlap N` re-includes the last N paragraph(s) in the next chunk for contextual continuity.
+
+### Phase 3 — Embeddings + Vector Store
+
+```bash
+python -m src.embeddings.cli \
+  [--chunks-dir data/processed] \
+  [--db-path data/chroma] \
+  [--collection egw_writings] \
+  [--model all-MiniLM-L6-v2] \
+  [--batch-size 64]
+```
+
+Embeds all `*_chunks.json` files and upserts into a persistent ChromaDB collection. Running again is **safe** — chunks are keyed by a deterministic ID so duplicates are never stored.
 
 ---
 
@@ -86,11 +100,12 @@ Produces `<book>_chunks.json` alongside each paragraph file:
 egw-citation-rag/
 ├── data/
 │   ├── raw/              # EPUB files (local only, not committed)
-│   └── processed/        # JSON output (local only, not committed)
+│   ├── processed/        # JSON output (local only, not committed)
+│   └── chroma/           # ChromaDB vector store (local only, not committed)
 ├── src/
 │   ├── ingestion/        # EPUB parsing (Phase 1)
 │   ├── preprocessing/    # Chunking (Phase 2)
-│   ├── embeddings/       # Embedding generation (Phase 3)
+│   ├── embeddings/       # Embedding + vector store (Phase 3)
 │   ├── retrieval/        # Similarity search (Phase 4)
 │   ├── generation/       # LLM response generation (Phase 5)
 │   └── utils/
@@ -109,7 +124,7 @@ egw-citation-rag/
 |-------|------------------------------|--------|
 | 1     | EPUB Ingestion               | ✅     |
 | 2     | Chunking                     | ✅     |
-| 3     | Embeddings + Vector Store    | ⬜     |
+| 3     | Embeddings + Vector Store    | ✅     |
 | 4     | Retrieval                    | ⬜     |
 | 5     | Generation with Citations    | ⬜     |
 | 6     | Interface (CLI / Streamlit)  | ⬜     |

@@ -5,6 +5,7 @@
 # -----------------------------------------------------------------
 data/raw/*
 data/processed/*
+data/chroma/
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 

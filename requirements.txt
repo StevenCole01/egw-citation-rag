@@ -1,7 +1,11 @@
-# Phase 1 — EPUB Ingestion
+# Phase 1 — Ingestion
 ebooklib>=0.18
 beautifulsoup4>=4.12
 lxml>=4.9
+
+# Phase 3 — Embeddings + Vector Store
+chromadb>=0.5
+sentence-transformers>=3.0
 
 # Testing
 pytest>=7.0
