@@ -25,6 +25,11 @@ python -m src.preprocessing.cli
 # 5. Embed chunks → ChromaDB vector store
 python -m src.embeddings.cli
 
+# 5. Query the vector store (no LLM — retrieval validation)
+python -m src.retrieval.cli --query "What does Ellen White say about prayer?"
+# or interactive mode:
+python -m src.retrieval.cli
+
 # 6. Run tests
 python -m pytest tests/ -v
 ```
@@ -125,6 +130,6 @@ egw-citation-rag/
 | 1     | EPUB Ingestion               | ✅     |
 | 2     | Chunking                     | ✅     |
 | 3     | Embeddings + Vector Store    | ✅     |
-| 4     | Retrieval                    | ⬜     |
+| 4     | Retrieval                    | ✅     |
 | 5     | Generation with Citations    | ⬜     |
 | 6     | Interface (CLI / Streamlit)  | ⬜     |
