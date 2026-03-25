@@ -118,7 +118,7 @@ streamlit run app/streamlit_app.py
 Opens at **http://localhost:8501**. Enter your OpenAI API key in the sidebar, then ask any question.
 
 **Features:**
-- Sidebar controls: model selector, number of sources, excerpt toggle
+- Sidebar controls: model selector, number of sources, excerpt toggle, and **front-matter filtering** (excludes structural sections like Preface/Foreword)
 - Gradient-styled answer card
 - Citation cards with similarity scores and source previews
 - Works without an API key (retrieval-only mode)
@@ -200,6 +200,7 @@ python -m src.embeddings.cli \
 ```bash
 python -m src.retrieval.cli [--query TEXT] [--top-k 5] [--db-path data/chroma] [--collection egw_writings]
 ```
+> By default, structural sections like "Preface" or "Table of Contents" are filtered out to improve relevance.
 
 ### Generation
 ```bash
