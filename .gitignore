@@ -1,3 +1,13 @@
+# -----------------------------------------------------------------
+# WhiteRAG: Data directories
+# Raw books (EPUB/PDF) and processed JSON are excluded for copyright
+# reasons. Add your own files locally — they will not be committed.
+# -----------------------------------------------------------------
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
