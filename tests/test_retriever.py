@@ -179,3 +179,70 @@ class TestCollectionInfo:
         info = retriever.collection_info()
         assert info["name"] == "test"
         assert info["count"] == 42
+
+
+# ---------------------------------------------------------------------------
+# Front-matter filtering
+# ---------------------------------------------------------------------------
+
+def _make_chroma_response_mixed() -> dict:
+    """Build a response mixing real chapters and front-matter sections."""
+    titles = [
+        "Chapter 1",          # real
+        "Preface",            # front matter
+        "Chapter 2",          # real
+        "Table of Contents",  # front matter
+        "Chapter 3",          # real
+        "Foreword",           # front matter
+        "Chapter 4",          # real
+        "Chapter 5",          # real
+    ]
+    documents = [f"Text of {t}." for t in titles]
+    metadatas = [
+        {
+            "book_title": "Steps to Christ",
+            "chapter_title": t,
+            "paragraph_range": json.dumps([i + 1, i + 2]),
+            "word_count": 50,
+        }
+        for i, t in enumerate(titles)
+    ]
+    distances = [0.05 * (i + 1) for i in range(len(titles))]
+    return {
+        "documents": [documents],
+        "metadatas": [metadatas],
+        "distances": [distances],
+    }
+
+
+class TestFrontMatterFiltering:
+    def test_front_matter_excluded_by_default(self):
+        retriever, mock_col, _ = _make_retriever(collection_count=50)
+        mock_col.query.return_value = _make_chroma_response_mixed()
+        results = retriever.search("grace", top_k=5)
+        chapter_titles = [r.chapter_title for r in results]
+        assert "Preface" not in chapter_titles
+        assert "Table of Contents" not in chapter_titles
+        assert "Foreword" not in chapter_titles
+
+    def test_only_real_chapters_returned(self):
+        retriever, mock_col, _ = _make_retriever(collection_count=50)
+        mock_col.query.return_value = _make_chroma_response_mixed()
+        results = retriever.search("grace", top_k=5)
+        for r in results:
+            assert r.chapter_title.startswith("Chapter")
+
+    def test_ranks_resequenced_after_filtering(self):
+        """After filtering, results must be re-ranked 1…n."""
+        retriever, mock_col, _ = _make_retriever(collection_count=50)
+        mock_col.query.return_value = _make_chroma_response_mixed()
+        results = retriever.search("grace", top_k=4)
+        assert [r.rank for r in results] == list(range(1, len(results) + 1))
+
+    def test_exclude_false_returns_front_matter(self):
+        """With exclude_front_matter=False, all raw results are returned."""
+        retriever, mock_col, _ = _make_retriever(collection_count=50)
+        mock_col.query.return_value = _make_chroma_response_mixed()
+        results = retriever.search("grace", top_k=8, exclude_front_matter=False)
+        titles = [r.chapter_title for r in results]
+        assert "Preface" in titles

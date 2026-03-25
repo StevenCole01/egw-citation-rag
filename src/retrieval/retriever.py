@@ -21,6 +21,10 @@ from src.embeddings.store import (
     DEFAULT_MODEL,
     get_collection,
 )
+from src.utils.front_matter import is_front_matter
+
+# Over-fetch multiplier when filtering front matter so we still return top_k results
+_FILTER_OVERFETCH = 4
 
 
 @dataclass
@@ -85,12 +89,20 @@ class Retriever:
     # Public API
     # ------------------------------------------------------------------
 
-    def search(self, query: str, top_k: int = 5) -> list[SearchResult]:
+    def search(
+        self,
+        query: str,
+        top_k: int = 5,
+        exclude_front_matter: bool = True,
+    ) -> list[SearchResult]:
         """Search the vector store for chunks relevant to the query.
 
         Args:
             query: Free-text user query.
             top_k: Number of results to return (default 5).
+            exclude_front_matter: If True (default), filter out structural
+                sections such as Preface, Foreword, and Table of Contents.
+                The retriever over-fetches internally to compensate.
 
         Returns:
             List of SearchResult objects, ranked by similarity score.
@@ -114,13 +126,31 @@ class Retriever:
         model = self._get_model()
         query_embedding = model.encode(query, convert_to_numpy=True).tolist()
 
+        # Over-fetch when filtering so we still return top_k after exclusions
+        fetch_k = min(
+            top_k * _FILTER_OVERFETCH if exclude_front_matter else top_k,
+            collection.count(),
+        )
+
         raw = collection.query(
             query_embeddings=[query_embedding],
-            n_results=min(top_k, collection.count()),
+            n_results=fetch_k,
             include=["documents", "metadatas", "distances"],
         )
 
-        return self._parse_results(raw)
+        results = self._parse_results(raw)
+
+        if exclude_front_matter:
+            results = [
+                r for r in results if not is_front_matter(r.chapter_title)
+            ]
+
+        # Trim to top_k and re-rank
+        results = results[:top_k]
+        for i, r in enumerate(results, start=1):
+            r.rank = i
+
+        return results
 
     def collection_info(self) -> dict:
         """Return basic info about the underlying collection.

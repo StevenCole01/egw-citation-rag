@@ -20,6 +20,7 @@ import chromadb
 from chromadb import Collection
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
+from src.utils.front_matter import is_front_matter
 
 
 # Default model — fast, high-quality, 384-dim embeddings
@@ -173,6 +174,7 @@ def _make_metadata(chunk: dict) -> dict[str, Any]:
         "chapter_title": chunk["chapter_title"],
         "paragraph_range": json.dumps(chunk["paragraph_range"]),
         "word_count": chunk["word_count"],
+        "is_front_matter": int(is_front_matter(chunk["chapter_title"])),
     }
 
 

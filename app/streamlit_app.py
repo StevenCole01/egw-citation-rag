@@ -183,6 +183,11 @@ with st.sidebar:
     st.divider()
 
     show_excerpts = st.toggle("Show source excerpts", value=True)
+    exclude_front_matter = st.toggle(
+        "Exclude front matter",
+        value=True,
+        help="Filter out Preface, Foreword, Table of Contents, and other structural sections",
+    )
 
     st.divider()
     st.markdown(
@@ -253,7 +258,11 @@ if submit and query.strip():
 
     # Retrieve
     with st.spinner(f"Searching {info['count']:,} indexed passages…"):
-        results = retriever.search(query.strip(), top_k=top_k)
+        results = retriever.search(
+            query.strip(),
+            top_k=top_k,
+            exclude_front_matter=exclude_front_matter,
+        )
 
     if not results:
         st.markdown('<div class="no-results">No relevant passages found.</div>', unsafe_allow_html=True)
